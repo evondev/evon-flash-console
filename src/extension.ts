@@ -33,7 +33,13 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       // Tìm dòng khai báo của biến
+      let isSingleLine = false;
       const currentLine = selection.active.line;
+      const lineText = document.lineAt(currentLine).text;
+      const trimmedLine = lineText.trim();
+      if (/\s{\s*$/.test(trimmedLine) || /;\s*$/.test(trimmedLine)) {
+        isSingleLine = true;
+      }
       let declarationLine = currentLine;
       let endLine = currentLine;
       let braceCount = 0; // Đếm dấu {}
@@ -73,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
             break;
           }
         }
-        if (trimmedLine.includes("=>") || trimmedLine.includes("{")) {
+        if (trimmedLine.includes("{")) {
           isBlockDeclaration = true;
         }
         if (trimmedLine.endsWith(";") || trimmedLine.includes("}")) {
@@ -81,17 +87,17 @@ export function activate(context: vscode.ExtensionContext) {
         }
       }
 
-      if (!variableDeclarationFound) {
-        vscode.window.showErrorMessage(
-          "Could not find the declaration of the selected variable!"
-        );
-        return;
-      }
+      // if (!variableDeclarationFound && !isSingleLine) {
+      //   vscode.window.showErrorMessage(
+      //     "Could not find the declaration of the selected variable!"
+      //   );
+      //   return;
+      // }
 
       // Kiểm tra nếu khai báo nằm trong khối mã
       const declarationLineText = document.lineAt(declarationLine).text.trim();
       if (
-        declarationLineText.includes("=>") ||
+        // declarationLineText.includes("=>") ||
         declarationLineText.includes("{")
       ) {
         isBlockDeclaration = true;
@@ -153,7 +159,7 @@ export function activate(context: vscode.ExtensionContext) {
                 ? document.lineAt(endLine + 1).text.trim()
                 : "";
             if (
-              !nextLineText.startsWith("=>") &&
+              // !nextLineText.startsWith("=>") &&
               !nextLineText.startsWith(")") &&
               !nextLineText.startsWith("}") &&
               !nextLineText.startsWith("]") &&
@@ -183,6 +189,30 @@ export function activate(context: vscode.ExtensionContext) {
           "Could not find the end of the variable or function declaration!"
         );
         return;
+      }
+
+      if (/\s{\s*$/.test(trimmedLine) || /;\s*$/.test(trimmedLine)) {
+        endLine = currentLine;
+      }
+
+      let maxRows = 100;
+      let newLineText = document.lineAt(currentLine).text;
+      let newCurrentLine = selection.active.line;
+      let isParamsMultipleLine = false;
+      while (newCurrentLine < document.lineCount) {
+        newLineText = document.lineAt(newCurrentLine).text;
+        if (maxRows <= 0) {
+          break;
+        }
+
+        if (/\s{\s*$/.test(newLineText) && /,\s*$/.test(lineText)) {
+          isParamsMultipleLine = true;
+          endLine = newCurrentLine;
+          break;
+        }
+
+        newCurrentLine++;
+        maxRows--;
       }
 
       // Lấy cấu hình từ settings.json

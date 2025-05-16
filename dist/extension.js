@@ -62,7 +62,13 @@ function activate(context) {
         );
         return;
       }
+      let isSingleLine = false;
       const currentLine = selection.active.line;
+      const lineText = document.lineAt(currentLine).text;
+      const trimmedLine = lineText.trim();
+      if (/\s{\s*$/.test(trimmedLine) || /;\s*$/.test(trimmedLine)) {
+        isSingleLine = true;
+      }
       let declarationLine = currentLine;
       let endLine = currentLine;
       let braceCount = 0;
@@ -74,11 +80,11 @@ function activate(context) {
       let variableDeclarationFound = false;
       let declarationContent = "";
       for (let i = currentLine; i >= 0; i--) {
-        const lineText = document.lineAt(i).text;
-        const trimmedLine = lineText.trim();
-        if (trimmedLine.match(/^(const|let|var)\s/)) {
+        const lineText2 = document.lineAt(i).text;
+        const trimmedLine2 = lineText2.trim();
+        if (trimmedLine2.match(/^(const|let|var)\s/)) {
           declarationLine = i;
-          declarationContent = lineText;
+          declarationContent = lineText2;
           let j = i + 1;
           while (j < document.lineCount) {
             const nextLineText = document.lineAt(j).text;
@@ -94,29 +100,26 @@ function activate(context) {
             break;
           }
         }
-        if (trimmedLine.includes("=>") || trimmedLine.includes("{")) {
+        if (trimmedLine2.includes("{")) {
           isBlockDeclaration = true;
         }
-        if (trimmedLine.endsWith(";") || trimmedLine.includes("}")) {
+        if (trimmedLine2.endsWith(";") || trimmedLine2.includes("}")) {
           break;
         }
       }
-      if (!variableDeclarationFound) {
-        vscode.window.showErrorMessage(
-          "Could not find the declaration of the selected variable!"
-        );
-        return;
-      }
       const declarationLineText = document.lineAt(declarationLine).text.trim();
-      if (declarationLineText.includes("=>") || declarationLineText.includes("{")) {
+      if (
+        // declarationLineText.includes("=>") ||
+        declarationLineText.includes("{")
+      ) {
         isBlockDeclaration = true;
       }
       endLine = declarationLine;
       while (endLine < document.lineCount) {
-        const lineText = document.lineAt(endLine).text;
-        const trimmedLine = lineText.trim();
-        for (let i = 0; i < lineText.length; i++) {
-          const char = lineText[i];
+        const lineText2 = document.lineAt(endLine).text;
+        const trimmedLine2 = lineText2.trim();
+        for (let i = 0; i < lineText2.length; i++) {
+          const char = lineText2[i];
           if (char === "{") {
             braceCount++;
           } else if (char === "}") {
@@ -129,29 +132,32 @@ function activate(context) {
             bracketCount++;
           } else if (char === "]") {
             bracketCount--;
-          } else if (char === "=" && i + 1 < lineText.length && lineText[i + 1] === ">" && !inArrowFunction) {
+          } else if (char === "=" && i + 1 < lineText2.length && lineText2[i + 1] === ">" && !inArrowFunction) {
             inArrowFunction = true;
             i++;
           }
         }
         if (braceCount === 0 && parenCount === 0 && bracketCount === 0 && !inArrowFunction) {
           if (isBlockDeclaration) {
-            if (trimmedLine.includes("}")) {
+            if (trimmedLine2.includes("}")) {
               foundEnd = true;
               break;
             }
-          } else if (trimmedLine.endsWith(";")) {
+          } else if (trimmedLine2.endsWith(";")) {
             foundEnd = true;
             break;
           } else if (endLine > declarationLine) {
             const nextLineText = endLine + 1 < document.lineCount ? document.lineAt(endLine + 1).text.trim() : "";
-            if (!nextLineText.startsWith("=>") && !nextLineText.startsWith(")") && !nextLineText.startsWith("}") && !nextLineText.startsWith("]") && !nextLineText.startsWith(",") && !nextLineText.startsWith("?") && !nextLineText.startsWith(":") && !nextLineText.startsWith("&&") && !nextLineText.startsWith("??") && !nextLineText.startsWith("||")) {
+            if (
+              // !nextLineText.startsWith("=>") &&
+              !nextLineText.startsWith(")") && !nextLineText.startsWith("}") && !nextLineText.startsWith("]") && !nextLineText.startsWith(",") && !nextLineText.startsWith("?") && !nextLineText.startsWith(":") && !nextLineText.startsWith("&&") && !nextLineText.startsWith("??") && !nextLineText.startsWith("||")
+            ) {
               foundEnd = true;
               break;
             }
           }
         }
-        if (inArrowFunction && parenCount === 0 && trimmedLine.includes(")")) {
+        if (inArrowFunction && parenCount === 0 && trimmedLine2.includes(")")) {
           inArrowFunction = false;
         }
         endLine++;
@@ -161,6 +167,26 @@ function activate(context) {
           "Could not find the end of the variable or function declaration!"
         );
         return;
+      }
+      if (/\s{\s*$/.test(trimmedLine) || /;\s*$/.test(trimmedLine)) {
+        endLine = currentLine;
+      }
+      let maxRows = 100;
+      let newLineText = document.lineAt(currentLine).text;
+      let newCurrentLine = selection.active.line;
+      let isParamsMultipleLine = false;
+      while (newCurrentLine < document.lineCount) {
+        newLineText = document.lineAt(newCurrentLine).text;
+        if (maxRows <= 0) {
+          break;
+        }
+        if (/\s{\s*$/.test(newLineText) && /,\s*$/.test(lineText)) {
+          isParamsMultipleLine = true;
+          endLine = newCurrentLine;
+          break;
+        }
+        newCurrentLine++;
+        maxRows--;
       }
       const config = vscode.workspace.getConfiguration("evonFlashConsole");
       const logType = config.get("logType", "log");
