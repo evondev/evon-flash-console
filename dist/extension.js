@@ -188,10 +188,35 @@ function activate(context) {
         newCurrentLine++;
         maxRows--;
       }
+      const icons = [
+        "\u{1F680}",
+        "\u26A1\uFE0F",
+        "\u{1F648}",
+        "\u{1F525}",
+        "\u{1F48E}",
+        "\u{1F31F}",
+        "\u2728",
+        "\u{1F389}",
+        "\u{1F38A}",
+        "\u{1F4A5}",
+        "\u{1F308}",
+        "\u{1F340}",
+        "\u{1F349}",
+        "\u{1F353}",
+        "\u{1F352}",
+        "\u{1F34D}",
+        "\u{1F951}",
+        "\u{1F95D}",
+        "\u{1F965}",
+        "\u{1F34B}"
+      ];
+      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
       const config = vscode.workspace.getConfiguration("evonFlashConsole");
       const logType = config.get("logType", "log");
       const includeFilename = config.get("includeFileName", true);
       const includeLineNum = config.get("includeLineNum", true);
+      const prefixText = config.get("prefixText", "\u{1F680}");
+      const isRandomPrefixIcon = config.get("randomPrefixIcon", false);
       const validLogTypes = ["info", "log", "debug", "warn", "error"];
       const finalLogType = validLogTypes.includes(logType) ? logType : "log";
       const fileName = document.fileName.split(/[\\/]/).pop() || "unknown";
@@ -206,7 +231,7 @@ function activate(context) {
       } else {
         logPrefix = `${variableName}:`;
       }
-      const logStatement = `console.${finalLogType}("${logPrefix}", ${variableName});`;
+      const logStatement = `console.${finalLogType}("${isRandomPrefixIcon ? `${randomIcon} ` : ""}${isRandomPrefixIcon ? "" : `${prefixText} `}${logPrefix}", ${variableName});`;
       editor.edit((editBuilder) => {
         const insertPosition = new vscode.Position(endLine + 1, 0);
         editBuilder.insert(insertPosition, logStatement + "\n\n");

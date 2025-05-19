@@ -2,11 +2,11 @@
   "name": "evon-flash-console",
   "displayName": "Evon Flash Console",
   "description": "Insert quick console into your code with a single command.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "evondev",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/evondev/evon-flash-console"
   },
   "icon": "icon.png",
   "engines": {
@@ -55,6 +55,16 @@
           "type": "boolean",
           "default": true,
           "description": "Include the line num in the console log."
+        },
+        "evonFlashConsole.randomPrefixIcon": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include random prefix icon in the console log."
+        },
+        "evonFlashConsole.prefixText": {
+          "type": "string",
+          "default": "🚀",
+          "description": "Prefix text to insert before the console log."
         }
       }
     }

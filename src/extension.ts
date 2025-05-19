@@ -214,13 +214,38 @@ export function activate(context: vscode.ExtensionContext) {
         newCurrentLine++;
         maxRows--;
       }
+      // generate more icons
+      const icons = [
+        "🚀",
+        "⚡️",
+        "🙈",
+        "🔥",
+        "💎",
+        "🌟",
+        "✨",
+        "🎉",
+        "🎊",
+        "💥",
+        "🌈",
+        "🍀",
+        "🍉",
+        "🍓",
+        "🍒",
+        "🍍",
+        "🥑",
+        "🥝",
+        "🥥",
+        "🍋",
+      ];
+      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
 
       // Lấy cấu hình từ settings.json
       const config = vscode.workspace.getConfiguration("evonFlashConsole");
       const logType = config.get<string>("logType", "log"); // Lấy logType, mặc định là 'log'
       const includeFilename = config.get<boolean>("includeFileName", true); // Lấy includeFilename, mặc định là true
       const includeLineNum = config.get<boolean>("includeLineNum", true); // Lấy includeLineNum, mặc định là true
-
+      const prefixText = config.get<string>("prefixText", "🚀"); // Lấy prefixText, mặc định là ''
+      const isRandomPrefixIcon = config.get<boolean>("randomPrefixIcon", false); // Lấy randomPrefixIcon, mặc định là false
       // Kiểm tra logType hợp lệ
       const validLogTypes = ["info", "log", "debug", "warn", "error"];
       const finalLogType = validLogTypes.includes(logType) ? logType : "log";
@@ -243,7 +268,11 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       // Tạo chuỗi console.info
-      const logStatement = `console.${finalLogType}("${logPrefix}", ${variableName});`;
+      const logStatement = `console.${finalLogType}("${
+        isRandomPrefixIcon ? `${randomIcon} ` : ""
+      }${
+        isRandomPrefixIcon ? "" : `${prefixText} `
+      }${logPrefix}", ${variableName});`;
 
       // Chèn console.info vào dòng tiếp theo sau khối mã và thêm dòng trống
       editor

@@ -1,9 +1,18 @@
 # Change Log
 
-All notable changes to the "evon-flash-console" extension will be documented in this file.
+## [0.0.4]
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+- Add random prefix icon
+- Add prefix text
 
-## [Unreleased]
+## [0.0.3]
 
-- Initial release
+- Fix log params
+
+## [0.0.2]
+
+- Fix log variables multiple line
+
+## [0.0.1]
+
+- Init extension

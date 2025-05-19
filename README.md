@@ -10,9 +10,11 @@
 
 ## Settings
 
-- Display filename in console: `evonFlashConsole.includeFileName`: `true` or `false`
-- Display line num in console: `evonFlashConsole.includeLineNum`: `true` or `false`
-- Log type to use: `evonFlashConsole.logType`: `log`, `info`, `error`, `warn`, `debug`
+- Display filename in console: `evonFlashConsole.includeFileName`. Default: `true`
+- Display line num in console: `evonFlashConsole.includeLineNum`. Default: `true`
+- Log type to use: `evonFlashConsole.logType`: `log`, `info`, `error`, `warn`, `debug`. Default: `log`
+- Display random prefix icon: `evonFlashConsole.randomPrefixIcon`. Default: `false`
+- Display prefix text: `evonFlashConsole.prefixText`. Default: 🚀
 
 ## My other extensions
 
